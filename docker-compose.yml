@@ -1,0 +1,58 @@
+version: '3'
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "80:80" 
+      - "8888:8888"
+    depends_on:
+      - php
+    volumes:
+      - "/docker-www/nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "/docker-www/html:/usr/share/nginx/html"
+    networks:
+      - app_net
+    container_name: "docker-www-nginx"
+  php:
+    image: breakhack/php7.4
+    ports:
+      - "9000:9000"
+    links:
+      - mysql
+    volumes:
+      - "/docker-www/html:/docker-www/html"
+     # - "/docker-www/php/extentions:/usr/local/lib/php/extensions/no-debug-non-zts-20190902"
+      - "/docker-www/php/config:/usr/local/etc/php"
+    networks:
+      - app_net
+    container_name: "docker-www-php"
+    privileged: true
+    user: 1000:1000 
+    stdin_open: true
+    tty: true
+  mysql:
+    image: mysql:5.7
+    ports: 
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - "/docker-www/mysql:/var/lib/mysql"
+    networks:
+      - app_net
+    container_name: "docker-www-mysql"
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    ports: 
+      - "8000:8000"
+      - "9001:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
+    networks:
+      - app_net
+networks:
+  app_net:
+volumes:
+  portainer_data:  
